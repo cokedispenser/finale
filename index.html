@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Butcherman&family=Cinzel:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #c00000;
+    --red-deep: #7a0000;
+    --gold: #ffd700;
+    --amber: #cc7500;
+    --amber-light: #e6900a;
+    --orange-dark: #c94f1c;
+  }
+
+  * { box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow-x: hidden;
+    background: radial-gradient(120% 90% at 50% 15%, #d40000 0%, var(--red) 45%, var(--red-deep) 100%);
+    font-family: 'Cinzel', serif;
+  }
+
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+  }
+
+  .rays {
+    position: absolute;
+    inset: 0;
+    background: repeating-conic-gradient(
+      from 0deg at 50% 20%,
+      rgba(0,0,0,0.12) 0deg 3deg,
+      transparent 3deg 18deg
+    );
+    pointer-events: none;
+  }
+
+  .watermark {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 18vh;
+    font-family: 'Butcherman', cursive;
+    font-size: clamp(3.2rem, 11vw, 7rem);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    color: rgba(0,0,0,0.16);
+    text-align: center;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 620px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .title {
+    font-family: 'Butcherman', cursive;
+    font-weight: 400;
+    font-size: clamp(3rem, 10vw, 5rem);
+    color: var(--gold);
+    text-shadow: 0 0 18px rgba(0,0,0,0.35);
+    margin: 0 0 40px;
+  }
+
+  /* ---- custom audio player ---- */
+  .player {
+    width: 100%;
+    max-width: 500px;
+    background: #3d3d3d;
+    border-radius: 999px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  }
+
+  .play-btn {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .play-btn svg { width: 16px; height: 16px; fill: #fff; }
+
+  .progress-track {
+    flex: 1 1 auto;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .progress-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0%;
+    background: #3ea6ff;
+    border-radius: 2px;
+  }
+
+  .progress-fill::after {
+    content: "";
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .time {
+    flex: 0 0 auto;
+    color: #ddd;
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .vol-icon { flex: 0 0 auto; color: #fff; display: flex; }
+  .vol-icon svg { width: 15px; height: 15px; fill: #fff; }
+
+  .vol-track {
+    flex: 0 0 70px;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .vol-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 100%;
+    background: #fff;
+    border-radius: 2px;
+  }
+
+  .vol-fill::after {
+    content: "";
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  /* ---- prompt + form ---- */
+  .prompt {
+    font-family: 'Butcherman', cursive;
+    color: var(--gold);
+    font-size: clamp(1.3rem, 3.5vw, 1.7rem);
+    margin: 44px 0 22px;
+  }
+
+  form { width: 100%; display: flex; flex-direction: column; align-items: center; }
+
+  #answer {
+    width: 100%;
+    max-width: 560px;
+    padding: 16px 20px;
+    font-size: 1.1rem;
+    font-family: 'Cinzel', serif;
+    color: #3a1a00;
+    background: linear-gradient(180deg, var(--amber-light), var(--amber));
+    border: none;
+    border-radius: 6px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.25);
+  }
+
+  #answer::placeholder { color: rgba(58,26,0,0.55); }
+
+  #answer:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .feedback {
+    min-height: 28px;
+    margin-top: 16px;
+    color: #ffe9a8;
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .feedback.shake { animation: shake 0.4s; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  .enter-btn {
+    margin-top: 18px;
+    padding: 14px 56px;
+    font-family: 'Butcherman', cursive;
+    font-size: 1.3rem;
+    color: var(--red);
+    background: linear-gradient(180deg, #ef7a3c, var(--orange-dark));
+    border: 2px solid var(--red-deep);
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  .enter-btn:hover { filter: brightness(1.08); }
+
+  .enter-btn:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 480px) {
+    .player { padding: 8px 12px; gap: 8px; }
+    .vol-track { flex-basis: 44px; }
+    .time { font-size: 0.68rem; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="rays" aria-hidden="true"></div>
+  <div class="watermark" aria-hidden="true">Wizarding<br>World</div>
+
+  <main class="content">
+    <h1 class="title">Finale</h1>
+
+    <audio id="audioEl" src="dictation-audio.mp3" preload="metadata"></audio>
+    <div class="player">
+      <button type="button" class="play-btn" id="playBtn" aria-label="Play">
+        <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <div class="progress-track" id="progressTrack">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="time" id="timeLabel">0:00 / 0:00</div>
+      <div class="vol-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
+      </div>
+      <div class="vol-track" id="volTrack">
+        <div class="vol-fill" id="volFill"></div>
+      </div>
+    </div>
+
+    <p class="prompt">Write the magic words</p>
+
+    <form id="spellForm" novalidate>
+      <label for="answer" style="position:absolute;left:-9999px;">Type the magic words</label>
+      <input type="text" id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="">
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+      <button type="submit" class="enter-btn">Enter</button>
+    </form>
+  </main>
+</div>
+
+<script>
+  const audio = document.getElementById('audioEl');
+  const playBtn = document.getElementById('playBtn');
+  const playIcon = document.getElementById('playIcon');
+  const progressTrack = document.getElementById('progressTrack');
+  const progressFill = document.getElementById('progressFill');
+  const timeLabel = document.getElementById('timeLabel');
+  const volTrack = document.getElementById('volTrack');
+  const volFill = document.getElementById('volFill');
+
+  function formatTime(sec) {
+    if (!isFinite(sec)) return '0:00';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  audio.volume = 1;
+
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) { audio.play(); } else { audio.pause(); }
+  });
+
+  audio.addEventListener('play', () => {
+    playIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+    playBtn.setAttribute('aria-label', 'Pause');
+  });
+
+  audio.addEventListener('pause', () => {
+    playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    playBtn.setAttribute('aria-label', 'Play');
+  });
+
+  audio.addEventListener('loadedmetadata', () => {
+    timeLabel.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+    progressFill.style.width = pct + '%';
+    timeLabel.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+  });
+
+  progressTrack.addEventListener('click', (e) => {
+    const rect = progressTrack.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    if (audio.duration) audio.currentTime = ratio * audio.duration;
+  });
+
+  volTrack.addEventListener('click', (e) => {
+    const rect = volTrack.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    audio.volume = ratio;
+    volFill.style.width = (ratio * 100) + '%';
+  });
+
+  // ---- answer validation ----
+  const ANSWER = "I am the chosen one";
+  const form = document.getElementById('spellForm');
+  const input = document.getElementById('answer');
+  const feedback = document.getElementById('feedback');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const guess = input.value.trim();
+    if (guess === ANSWER) {
+      window.location.href = 'congrats.html';
+      return;
+    }
+    feedback.textContent = 'wrong guess, muggle';
+    feedback.classList.remove('shake');
+    void feedback.offsetWidth;
+    feedback.classList.add('shake');
+  });
+</script>
+</body>
+</html>
