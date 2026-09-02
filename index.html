@@ -365,14 +365,20 @@
   });
 
   // ---- answer validation ----
-  const ANSWER = "I AM THE CHOSEN ONE";
+  // Normalizes away case, leading/trailing whitespace, AND any doubled-up
+  // internal spaces, so "I   am the chosen ONE " still matches.
+  function normalize(str) {
+    return str.trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  const ANSWER = normalize("I am the chosen one");
   const form = document.getElementById('spellForm');
   const input = document.getElementById('answer');
   const feedback = document.getElementById('feedback');
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const guess = input.value.trim().toUpperCase();
+    const guess = normalize(input.value);
     if (guess === ANSWER) {
       window.location.href = 'congrats.html';
       return;
